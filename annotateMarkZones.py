@@ -5,11 +5,10 @@ import pytesseract
 vertices = []
 
 def getCoordinates(event, x, y, flags, param):
-    global rois, vertices
+    global vertices
     
     if event == cv2.EVENT_LBUTTONDOWN:
         vertices.append((x,y))
-        print(vertices)
 
 def ocr(image, scale=5):
     """
@@ -26,16 +25,20 @@ def ocr(image, scale=5):
 
 def selectROIs(image, scale=1):
     """
-    Draw ROIs on ballot uning left mouse button for selecting corners minimum two corners in a rectangle. 
+    Draw ROIs on ballot uning left mouse button for selecting minimum two corners in a rectangle. 
+    Returns list of dictionaries containing name of politician and rectangle points for ROI.
     Press: 
     "y" when ROI is finished, 
     "d" deleting currently selected corners
     "r" for deleting last ROI
     "q" for quit
+    "o" for OCR scan of name
     """
     global vertices
+    points = []
     rois = []
     names = []
+    data = []
 
     h, w = image.shape[:2]
     resized = cv2.resize(image, (int(w * scale), int(h * scale)))
@@ -47,10 +50,6 @@ def selectROIs(image, scale=1):
 
     # Draw and keep looping until the 'q' key is pressed
     while True:
-        x = []
-        y = []
-        w = []
-        h = []
 
         # Draw selected points and bounding rectangle
         if len(vertices) != 0:
@@ -59,13 +58,12 @@ def selectROIs(image, scale=1):
 
             x,y,w,h = cv2.boundingRect(np.array([vertices], dtype=np.int32))
             cv2.rectangle(copy,(x,y),(x+w,y+h),(0,255,0),2)
+            points = [(x, y+h),(x+w, y)]
 
         # Draw previous ROIs
         if len(rois) != 0:
-            for polygon in rois:
-                x1,y1,w1,h1 = cv2.boundingRect(np.array([polygon], dtype=np.int32))
-                cv2.rectangle(copy,(x1,y1),(x1+w1,y1+h1),(0,0,255),2)
-
+            for p1, p2 in rois:
+                cv2.rectangle(copy,p1,p2,(0,0,255),2)
 
         # display the image and wait for a keypress
         cv2.imshow("Select ROI", copy)      
@@ -76,7 +74,7 @@ def selectROIs(image, scale=1):
         # Handle different keypress for editing
         key = cv2.waitKey(1) & 0xFF
         if key & 0xFF == ord("y"):
-            rois.append(vertices)
+            rois.append(points)
             vertices = []
         elif key & 0xFF == ord("d"):
             vertices = []        
@@ -96,10 +94,16 @@ def selectROIs(image, scale=1):
     if scale != 1:
         rescale = scale**-1
         rescaled_rois = [[tuple([int(x*rescale) for x in y]) for y in z] for z in rois]
+    
+    # Merging name and mark region    
+    for name, rect in zip(names, rescaled_rois):
+        d = {
+            "name": name,
+            "rect": rect 
+        }
+        
+        data.append(d)
 
-    # Merging name and mark region
-    data = dict(zip(names, rescaled_rois))
-            
     return data
 
 if __name__ == '__main__':
@@ -110,8 +114,9 @@ if __name__ == '__main__':
     # test = ocr(text)
     # print(test)
 
-    names = selectROIs(background, scale=2)
-    print(names)
+    data = selectROIs(background, scale=2)
+    #np.save('data/stemboks.npy',data)
+    print(data)
 
     # gray = cv2.cvtColor(text, cv2.COLOR_BGR2GRAY)
     # gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
