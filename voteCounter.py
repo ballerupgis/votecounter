@@ -26,6 +26,8 @@ def binaryROIImage(image, rectangles, threshold=10):
 
         roi = thres[y:y+h, x:x+w]
         zeroed[y:y+h, x:x+w] = roi
+    
+    cv2.imshow("binary", zeroed)
         
     return zeroed
 
@@ -52,6 +54,7 @@ def detectMark(image, rectangles, threshold=10):
 
     # Find blobs in the input image.
     _, contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    np.save('temp/cnt5.npy', contours)
 
     if len(contours) != 0:
         for contour in contours:
@@ -67,6 +70,10 @@ def detectMark(image, rectangles, threshold=10):
         print("Didn't find any marks")
 
 def pointWithinRectangle(point, rectangle):
+    """
+    Return true if point is within a rectangle. rectangles is 
+    defined as two diagonal corner points e.g. bottom left, top right 
+    """
     px = point[1]
     py = point[0]
     x_vals = [x for (y, x) in rectangle]
@@ -101,7 +108,7 @@ def getVote(point, data):
             return i["name"]
 
 if __name__ == '__main__':
-    filled_path = "images/stemboks/stem_4.jpg"
+    filled_path = "images/stemboks/stem_2.jpg"
     empty_path = "images/stemboks/stem_back.jpg"
     empty = cv2.imread(empty_path)
     filled = cv2.imread(filled_path)
