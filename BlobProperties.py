@@ -130,6 +130,8 @@ class Properties(object):
                 props.update({"Centroid": self.__CalculateCentroid(contour)})
             elif prop == "circle":
                 props.update({"Circle": self.__CalculateCircle(contour)})
+            elif prop == "circularity":
+                props.update({"Circularity": self.__CalculateCircularity(contour)})
             elif prop == "convexhull":
                 props.update({"ConvexHull": self.__CalculateConvexHull(contour)})
             elif prop == "extend":
@@ -146,8 +148,8 @@ class Properties(object):
                 props.update({"Perimeter": self.__CalculatePerimeter(contour)})
             elif prop == "rotatedbox":
                 props.update({"RotatedBox": self.__CalculateRotatedBox(contour)})
-            elif prop == "circularity":
-                props.update({"Circularity": self.__CalculateCircularity(contour)})
+            elif prop == "solidity":
+                props.update({"Solidity": self.__CalculateSolidity(contour)})
             elif failInInput:
                 pass
             else:
@@ -276,3 +278,18 @@ class Properties(object):
         rectangle = cv2.minAreaRect(contour)
         box = cv2.boxPoints(rectangle)
         return np.int0(box)
+
+    def __CalculateSolidity(self, contour):
+        """
+        Calculate solidity of contour by taking ratio between convex hull of 
+        the contour and area of the original contour.
+        """
+        area = cv2.contourArea(contour)
+        hull = cv2.convexHull(contour)
+        hullArea = cv2.contourArea(hull)
+        if  hullArea != 0:
+            solidity = area / float(hullArea)
+            return solidity
+        else: 
+            return 0
+
