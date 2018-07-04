@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from warpImage import warpImage
+from warpImage import warpImage, autoWarpImage
 
 def binaryROIImage(image, rectangles, threshold=10):
     
@@ -108,12 +108,14 @@ def getVote(point, data):
             return i["name"]
 
 if __name__ == '__main__':
-    filled_path = "images/stemboks/stem_2.jpg"
+    filled_path = "images/stemboks/stem_3.jpg"
     empty_path = "images/stemboks/stem_back.jpg"
     empty = cv2.imread(empty_path)
     filled = cv2.imread(filled_path)
 
-    warped = warpImage(filled, empty)
+    #warped = warpImage(filled, empty)
+    warped = autoWarpImage(empty, filled)
+
     #warped = np.load('temp/warped.npy')
     data = np.load('data/stemboks.npy')
     rects = [i['rect'] for i in data]
