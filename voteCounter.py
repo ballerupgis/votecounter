@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from glob import glob
 from warpImage import warpImage, autoWarpImage
 
 def binaryROIImage(image, rectangles, threshold=10):
@@ -39,18 +40,6 @@ def detectMark(image, rectangles, threshold=10):
     centroids = []
 
     image = binaryROIImage(image, rectangles, threshold)
-
-    # # Grayscale image.
-    # grayscale = image.copy()
-    # if len(grayscale.shape) == 3:
-    #     grayscale = cv2.cvtColor(grayscale, cv2.COLOR_BGR2GRAY)
-
-    # # Create negative imgage for thresholding
-    # inv = cv2.bitwise_not(grayscale)
-    
-    # # Create a binary image.
-    # _, thres = cv2.threshold(inv, threshold, 255,
-    #                          cv2.THRESH_BINARY)
 
     # Find blobs in the input image.
     _, contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -108,22 +97,23 @@ def getVote(point, data):
             return i["name"]
 
 if __name__ == '__main__':
-    filled_path = "images/stemboks/stem_3.jpg"
+    filled_path = "images/stemboks/stem_4.jpg"
     empty_path = "images/stemboks/stem_back.jpg"
+    data = np.load('data/stemboks_corrected.npy')
+    rects = [i['rect'] for i in data]
+
     empty = cv2.imread(empty_path)
     filled = cv2.imread(filled_path)
 
-    #warped = warpImage(filled, empty)
-    warped = autoWarpImage(empty, filled)
+    imgs = glob('images/stemboks/*.jpg')
 
-    #warped = np.load('temp/warped.npy')
-    data = np.load('data/stemboks.npy')
-    rects = [i['rect'] for i in data]
+    for img in imgs:
+        
+        filled = cv2.imread(img)
+        warped = autoWarpImage(empty, filled)
+        point = detectMark(warped, rects)
+        print(getVote(point, data))
 
-    point = detectMark(warped, rects)
-    print(getVote(point, data))
-
-    cv2.imshow("IMAGE", warped)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
