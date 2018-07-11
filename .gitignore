@@ -105,3 +105,5 @@ venv.bak/
 
 # vs code
 *.code-workspace
+
+train.py

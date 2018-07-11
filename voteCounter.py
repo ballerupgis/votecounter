@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from glob import glob
+import csv
 from warpImage import warpImage, autoWarpImage
 from collections import Counter
 
@@ -135,15 +136,26 @@ def voteCounter(ballots, empty_ballot, data):
     counts = dict(Counter(votes))
     return votes, counts
 
+def toCSV(save_path, counts):
+    """
+    Save vote counts to CSV
+    """
+    with open(save_path,'w') as f:
+        w = csv.writer(f)
+        w.writerows(counts.items())
+
 if __name__ == '__main__':
 
     empty_path = "images/stemboks/stem_back.jpg"
     empty = cv2.imread(empty_path)
     data = np.load('data/stemboks_corrected.npy')
+    csv_path = 'temp/reuslt.csv'
 
     ballots = loadImagesFromPath('images/stemboks/*.jpg')
 
     votes, counts = voteCounter(ballots,empty, data)
+
+    toCSV(csv_path, counts)
     print(votes, counts)
 
     # cv2.waitKey(0)
