@@ -3,6 +3,7 @@ import cv2
 from glob import glob
 from warpImage import warpImage, autoWarpImage
 from collections import Counter
+import csv
 
 def binaryROIImage(image, rectangles, threshold=10):
     """
@@ -135,16 +136,27 @@ def voteCounter(ballots, empty_ballot, data):
     counts = dict(Counter(votes))
     return votes, counts
 
+def countsToCSV(csv_path, counts):
+    """
+    Saves vote counts to CSV
+    """
+    with open(csv_path, 'w', newline='') as f:
+        w = csv.writer(f)
+        w.writerows(counts.items())
+
 if __name__ == '__main__':
 
     empty_path = "images/stemboks/stem_back.jpg"
     empty = cv2.imread(empty_path)
     data = np.load('data/stemboks_corrected.npy')
 
-    ballots = loadImagesFromPath('images/stemboks/*.jpg')
+    ballots = loadImagesFromPath('images/stemboks/test/*.jpeg')
 
     votes, counts = voteCounter(ballots,empty, data)
-    print(votes, counts)
+    print(counts)
+
+    csv_path = "temp/test2.csv"
+    countsToCSV(csv_path, counts)
 
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
