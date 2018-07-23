@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from glob import glob
+import csv
 from warpImage import warpImage, autoWarpImage
 from collections import Counter
 import csv
@@ -149,6 +150,7 @@ if __name__ == '__main__':
     empty_path = "images/stemboks/stem_back.jpg"
     empty = cv2.imread(empty_path)
     data = np.load('data/stemboks_corrected.npy')
+    csv_path = 'temp/reuslt.csv'
 
     ballots = loadImagesFromPath('images/stemboks/test/*.jpeg')
 
